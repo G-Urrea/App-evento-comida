@@ -9,8 +9,7 @@ FROM region, comuna as nombre, comuna
 WHERE region.id = comuna.region_id  
 ORDER BY region.nombre, comuna.nombre
  '''
-regiones = database.make_sql(query)
-#print(regiones)
+regiones = database.get_regiones_comunas()
 data = {}
 for pair in regiones:
     if pair[0] not in data:
@@ -21,5 +20,5 @@ for pair in regiones:
 
 y = json.dumps(data, ensure_ascii=False).encode('utf8').decode('utf8')
 
-with codecs.open("json/regiones.json", "w", "utf-8") as outfile:
+with codecs.open("static/json/regiones.json", "w", "utf-8") as outfile:
     outfile.write(y)
