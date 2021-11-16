@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+
+
+<head>
+    <title>Registro de evento</title>
+    <meta charset="UTF-8">
+    <base href="../">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/static/css/nuevo_evento.css">
+    <link rel="stylesheet" href="/static/css/menu.css">
+    <link rel="stylesheet" href="/static/css/modal.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ"
+        crossorigin="anonymous"></script>
+
+    <script src="/static/js/red_social.js"></script>
+    <script src="/static/js/crear_regiones.js"></script>
+    <script src="/static/js/validar.js"></script>
+    <script src="/static/js/tipo_comida.js"></script>
+    <script src="/static/js/menu.js"></script>
+</head>
+
+<body>
+    <div class="topnav" id="menu">
+    </div>
+
+    <div class="titulo negrita">Informe su evento</div>
+    <div class="error" id="error">
+        <span class="close" onclick="close_error();">x</span>
+        <div class="seccion">Se han encontrado los siguientes errores</div>
+        {0}
+    </div>
+    <div class="main">
+
+        <form id="evento" name="evento" action="/cgi-bin/add_event.py" enctype="multipart/form-data" method="post" onsubmit="envio(); return false;">
+
+            <div class="seccion">¿Quien ofrece?</div>
+            <div class="entrada">
+
+                <div class="leyenda">Nombre*</div>
+
+                <input type="text" size="100" class="nombre-input" id="nombre" name="nombre" placeholder="Ej: Júan"
+                    maxlength="200" required />
+
+            </div>
+
+            <div class="entrada">
+
+                <div class="leyenda">Email*</div>
+
+                <input type="text" size="100" class="nombre-input" name="email" id="email" placeholder="Ej: xx@xx.xx"
+                    required />
+
+            </div>
+
+            <div class="entrada">
+
+                <div class="leyenda">Nro de celular</div>
+
+                <input type="text" size="15" class="nombre-input" id="celular" name="celular" placeholder="Ej: 9xxxxxxxx" />
+
+            </div>
+
+            <div class="entrada">
+
+                <div class="leyenda">Redes sociales</div>
+
+
+                <select id="red-social" name="red-social" onchange="añadir_red(this.value);">
+                </select>
+
+            </div>
+
+            <div id="form-redes">
+            </div>
+
+
+            <div class="seccion">¿Donde?</div>
+
+            <div class="entrada">
+
+                <div class="leyenda">Región*</div>
+
+                <select id="region" name="region" onchange="mostrar_comunas(this.value)" required>
+                    <option value="" selected="selected">Seleccione una Región</option>
+                </select>
+
+            </div>
+
+            <div class="entrada">
+
+                <div class="leyenda">Comuna*</div>
+
+                <select id="comuna" name="comuna" required>
+                    <option value="" selected="selected">Seleccione una comuna</option>
+                </select>
+
+            </div>
+
+            <div class="entrada">
+
+                <div class="leyenda">Sector</div>
+
+                <input type="text" id="sector" name="sector" size="100" maxlength="100"
+                    placeholder="Ej: Plaza de armas">
+
+            </div>
+
+            <div class="seccion">¿Cuándo y qué se ofrece?
+            </div>
+            <div class="entrada">
+                <div class="leyenda">Dia y hora de inicio*</div>
+
+                <input type="text" id="dia-hora-inicio" name="dia-hora-inicio" size="20" required>
+
+            </div>
+
+            <div class="entrada">
+                <div class="leyenda">Dia y hora de termino*</div>
+
+                <input type="text" id="dia-hora-termino" name="dia-hora-termino" size="20" required>
+
+            </div>
+
+            <div class="entrada">
+                <div class="leyenda">Tipo de comida*</div>
+                <select id="tipo-comida" name="tipo-comida" required>
+                    <option value="" selected="selected"> Selecciones un tipo de comida</option>
+                </select>
+            </div>
+
+            <div class="entrada">
+
+                <div class="leyenda comentario">Descripción del evento</div>
+
+                <textarea id="descripcion-evento" name="descripcion-evento" maxlength="1000" rows="10" cols="50"
+                    placeholder="Describa su evento"></textarea>
+
+            </div>
+
+            <div class="entrada container">
+
+                <div class="leyenda">Fotos*</div>
+                <div class="btn-group-vertical" id="archivos">
+                    <input type="file" class="foto" name="foto-comida" required>
+                </div>
+
+                <button type="button" class="boton-agregar " onclick="agregaInput()">Agregar otra foto</button>
+
+            </div>
+
+            <div class="entrada">* Campo obligatorio</div>
+
+            <div class="entrada botones">
+
+                <button id="enviar" type="submit">Subir</button>
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+    <div id="confirmacion" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirmar envío del formulario</h2>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro que desea
+                    agregar este evento?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="close-button" class="modal-button" type="button">Volver al formulario</button>
+                <button type="button" class="modal-button" id="send-button">Envíar formulario</button>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        {1}
+    </script>
+</body>
+
+</html>

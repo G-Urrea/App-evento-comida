@@ -3,112 +3,185 @@
 
 import cgi
 import cgitb
-
 cgitb.enable()
 
 import db
 import sys
 import codecs
+import validar
 
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach()) # Pa' que funque UTF-8
 form = cgi.FieldStorage()
 database = db.Datasaver('localhost', 'root', '', 'tarea2')
 print('Content-type: text/html; charset=UTF-8')
+print("")
 
-#INSERT INTO evento 
-# (comuna_id, sector, nombre, email, celular, dia_hora_inicio, dia_hora_termino, descripcion, tipo)
-#  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+# Para cargar parametros opcionales
+def carga(storage, parametro, value= False):
+    try:
+        if value:
+            par = storage[parametro].value
+        else:
+            par = storage[parametro]
+    except:
+        par = ''
+    return par
 
 nombre = form["nombre"].value
-email = form["nombre"].value
+email = form["email"].value
 cel = form["celular"].value
-redes = form["red-social"]
 region = form["region"].value
-comuna = form["comuna"].value
-sector = form["sector"].value
+comuna = carga(form, "comuna", True)
 dhi = form["dia-hora-inicio"].value
 dht = form["dia-hora-termino"].value
 tcomida = form["tipo-comida"].value
-desc = form["descripcion-evento"].value
-fotos =  form["foto-comida"]
+photos =  form["foto-comida"]
 
-id_comuna = database.get_comuna_id(region, comuna)
+fotos = []
+try:
+    photos.value # Si tiene value, entonces es uno solo
+    if photos.filename:
+        fotos.append(photos)
+except:
+    for photo in photos:
+        if photo.filename:
+            fotos.append(photo)
 
-event_data = (id_comuna, sector, nombre, email, cel, dhi, dht, desc, tcomida)
+# Carga de parametros opcionales
+redes = ["Facebook" , "Twitter", "Instagram", "TikTok", "Otra"]
+redes_form = []
+for x in redes:
+    p = carga(form, x, value=True)
+    if p!='':
+        redes_form.append((x, p))
 
-database.save_event(event_data)
+sector = carga(form, "sector", True)
+desc = carga(form, "descripcion-evento", True)
 
-head = '''
-<!DOCTYPE html>
-<html lang="en">
+# Validación acá
+pair = validar.validacion(nombre, email, cel, region, comuna, dhi, dht, tcomida, fotos, redes_form)
 
-<head>
-    <title>Información recibida</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="../css/menu.css">
-    <link rel="stylesheet" href="../css/success.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+if pair[0]: # Todo bien, todo correcto
+    id_comuna = database.get_comuna_id(region, comuna)
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ"
-        crossorigin="anonymous"></script>
+    event_data = (id_comuna, sector, nombre, email, cel, dhi, dht, desc, tcomida)
+    database.save_event(event_data, redes_form, fotos)# Subir a bdd
+    with open("static/html/success.html", 'r', encoding='utf8') as template:
+        file = template.read()
+        print(file)
+else: # oh no D:
+    with open("static/html/nuevo_evento_error.html", 'r', encoding='utf8') as template:
+        s = '{0}'
+        file = template.read()
+        error = ''
+        script1 ='''
+        window.addEventListener("load", myInit, true);
+        function myInit() {
+            insertar_fechas();
+            mostrar_comida();
+            mostrar_regiones();
+            mostrar_redes();
+            loadnav();
+            '''
+        
+        script2='''
+        };
+        function close_error(){
+            let error = document.getElementById("error");
+            error.style.display= "none";
+        }
+        function envio() {
+            let valid = validar_campos();
+            if (valid) {
+                let confirmacion = document.getElementById("confirmacion");
+                let close_btn = document.getElementById("close-button");
+                let send_btn = document.getElementById("send-button");
 
-</head>
-'''
+                confirmacion.style.display = "block";
+                close_btn.onclick = function () {
+                    confirmacion.style.display = "none";
+                }
+                send_btn.onclick = function () {
+                    let forma = document.forms["evento"];
+                    forma.submit();
+                }
 
-navbar = '''
-<body class="body">
-    <div class="topnav" id="myTopnav">
-        <a href="../portada.html" class="active">Portada</a>
-        <a href="../nuevo_evento.html">Informar Evento</a>
-        <a href="../listado_eventos.html">Listado de eventos</a>
-        <a href="../estadisticas.html">Estadisticas</a>
-        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-            <i class="fa fa-bars"></i>
-        </a>
-    </div>
-
-'''
-
-
-html = '''
-
-    <div class="titulo negrita">Envío de información exitoso</div>
-    <div class="main">
-        Hemos recibido su información, muchas gracias y suerte en su emprendimiento
-    </div>
-
-    <button id="home-btn" class="boton" type="button" onclick="window.location('portada.html')">Volver a la portada</button>
-
-
-
-'''
-end = '''
-    <script>
-        function myFunction() {
-            var x = document.getElementById("myTopnav");
-            if (x.className === "topnav") {
-                x.className += " responsive";
-            } else {
-                x.className = "topnav";
             }
         }
-    </script>
-</body>
+        function agregaInput() {
+            let nfiles = document.getElementsByName("foto-comida").length;
+            if (nfiles < 5) {
+                var inp = document.createElement("input");
+                inp.type = "file";
+                inp.className = "foto";
+                inp.name = "foto-comida"
+                document.getElementById("archivos").appendChild(inp);
+            }
+        };
 
-</html>
-'''
+        function añadir_red(red_seleccionada) {
+            let red_social = document.getElementById(red_seleccionada);
 
-foo = f'''
-<div>
-<p>{redes}</p>
-<p>{fotos}</p>
-<p>Consulta Sql : {id_comuna}</p>
-</div>
-'''
-print(head)
-print(navbar)
-print(foo)
-print(end)
+            if (red_social == null  && red_seleccionada != "") {
+                let entry = document.createElement("div");
+                entry.className = "entrada";
+
+                let caption = document.createElement("div");
+                caption.className = "leyenda";
+                caption.innerHTML = red_seleccionada;
+                entry.appendChild(caption);
+
+                let inp = document.createElement("input");
+                inp.type = "text";
+                inp.placeholder = "Ingrese su url/id de " + red_seleccionada;
+                inp.id = red_seleccionada;
+                inp.name = red_seleccionada;
+                entry.appendChild(inp)
+
+                document.getElementById("form-redes").appendChild(entry);
+            }
+        }
+
+        '''
+        inject = '''
+        let name = document.getElementById('nombre');
+        nombre.value = "{0}";
+        let email = document.getElementById('email');
+        email.value = "{1}";
+        let celular = document.getElementById('celular');
+        celular.value = "{2}";
+        let redes_keys = {3};
+        let redes_values = {4}
+        let sector = document.getElementById('sector');
+        sector.value = "{5}";
+        let dhi = document.getElementById('dia-hora-inicio');
+        let dht = document.getElementById('dia-hora-termino');
+        dhi.value = "{6}";
+        dht.value = "{7}";
+        let desc =  document.getElementById('descripcion-evento');
+        desc.value = "{8}";
+        '''
+
+        inject_redes = '''
+        for (let i = 0; i<redes_keys.length; i++){
+            añadir_red(redes_keys[i]);
+            let temp = document.getElementById(redes_keys[i]);
+            temp.value = redes_values[i];
+            }
+        '''
+
+        redes_values = [x[1] for x in redes_form]
+        redes_keys = [x[0] for x in redes_form]
+        tup = (nombre, email, cel, redes_keys, redes_values, sector, dhi, dht, desc)
+        inject = inject.format(*tup) +  inject_redes
+        script = script1+inject+script2
+
+        for tupla in pair[1]:
+            if not tupla[0]:
+                if type(tupla[1])==str:
+                    error+='<p>{0}</p>'.format(tupla[1])
+                else:
+                    string = '</p><p>'.join(tupla[1])
+                    error+='<p>{0}</p>'.format(string)
+        print(s.format(file.format(error, script)))
