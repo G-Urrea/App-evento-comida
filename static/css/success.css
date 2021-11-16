@@ -1,0 +1,40 @@
+.body{
+    background-color:grey ;
+}
+
+.boton{
+    float: right;
+    margin-right: 5%;
+    margin-top: 5%;
+    background-color: #02915c;
+    color: whitesmoke;
+    padding: 10px;
+    border-radius: 10px;
+    border: 0;
+    outline: 0;
+    font-size: 20px;
+    font-weight: 300;
+}
+
+.titulo {
+    font-size: 50px;
+    width: 100%;
+    text-align: center;
+    margin-top: 5%;
+}
+
+.negrita {
+    font-weight: 800;
+}
+
+.main {
+    width: 70%;
+    background-color: #02915c;
+    color :whitesmoke;
+    border-radius: 10px;
+    padding: 30px;
+    margin-left: 15%;
+    margin-top: 20px;
+    box-shadow: #adadad30 0 0 9px 2px;
+    font-weight: 400;
+}
