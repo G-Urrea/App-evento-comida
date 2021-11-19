@@ -42,7 +42,7 @@ with open("static/html/portada.html", 'r', encoding='utf8') as template:
             <td> {event[1]} </td>
             <td> {event[2]} </td>
             <td>{event[5]}</td>
-            <td><img src="/media/{event[0]}" ></td>
+            <td><img src="/media/{event[0]}" alt="" ></td>
             </tr>
             '''
         inject+='</table>'
