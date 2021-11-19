@@ -9,4 +9,5 @@ Hay que tener instalado Python, MySQL y Apache. También hay que ejecutar los si
 ## Como iniciar la aplicación
 Es necesario iniciar MySQL y Apache, luego de eso hay que meterse en la carpeta raíz de la aplicación y ejecutar el siguiente comando en una terminal:
 - python -m http.server --bind localhost --cgi 8000
+
 Luego bastaría con entrar en la dirección localhost:8000 en un navegador web.
