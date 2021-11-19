@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Estadisticas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/static/css/menu.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link href="/static/css/estadisticas.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-2.4.2.min.js"></script>
+    <script src="/static/js/estadisticas.js"></script>
+    <script src="/static/js/menu.js"></script>
+</head>
+
+<body onload="loadnav();">
+    <div class="topnav" id="menu">
+    </div>
+
+    <div class="titulo negrita">Estadisticas</div>
+    <div id="lineplot" class="plot-div"></div>
+
+    <div id="pieplot" class="plot-div"></div>
+
+    <div id="barplot" class="plot-div"></div>
+
+    <button type="button" onclick="location.assign('/cgi-bin/portada.py');">Ir a la Portada</button>
+
+    <script>
+
+        function requestLine(){
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var line = xmlhttp.responseText;
+                    let line_div = document.getElementById('lineplot');
+                    let line_layout = create_layout('N° de eventos por día', 'Fecha', 'Número de eventos');
+                    Plotly.newPlot(line_div, JSON.parse(line), line_layout);
+                }
+            }
+            xmlhttp.open("GET", "/cgi-bin/linea.py", true);
+            xmlhttp.send();
+        }
+        function requestPie() {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var pie = xmlhttp.responseText;
+                    let pie_div = document.getElementById("pieplot");
+                    Plotly.newPlot(pie_div, JSON.parse(pie), create_layout('Porcentaje de eventos por tipo', '', ''));
+                }
+            }
+            xmlhttp.open("GET", "/cgi-bin/torta.py", true);
+            xmlhttp.send();
+        }
+        function requestBar(){
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var bar = xmlhttp.responseText;
+                    let bar_div = document.getElementById('barplot');
+                    let layout = create_layout('N° de eventos según mes y hora del día', 'Mes', 'Cantidad')
+                    Plotly.newPlot(bar_div, JSON.parse(bar), layout);
+                }
+            }
+            xmlhttp.open("GET", "/cgi-bin/barra.py", true);
+            xmlhttp.send();
+        }
+
+        requestLine();
+        requestPie();
+        requestBar();
+        
+
+    </script>
+</body>
+
+</html>
